@@ -1,0 +1,21 @@
+ARCHOPTS := -s EXCEPTION_CATCHING_ALLOWED=[instantiateArrayBuffer,instantiateAsync,createWasm] 
+ARCHOPTS += -s LEGACY_GL_EMULATION=1 -s TOTAL_MEMORY=512mb 
+SHELL := /bin/bash 
+MAMEDIR := /mame/
+OUTPUT := /output/
+JS := $(addsuffix .js,$(addprefix $(OUTPUT),$(MAKECMDGOALS)))
+WASM := $(addsuffix .wasm,$(addprefix $(OUTPUT),$(MAKECMDGOALS)))
+.PHONY: all clean $(MAKECMDGOALS)
+
+$(MAKECMDGOALS): $(JS) $(WASM)
+$(OUTPUT)%.js $(OUTPUT)%.wasm:
+	echo $*
+	source /emsdk/emsdk_env.sh && \
+	emmake make -C mame -j $(shell nproc) SUBTARGET=$* SOURCES=src/mame/drivers/$*.cpp \
+	   ARCHOPTS="$(ARCHOPTS)"\
+	   NO_OPENGL=1 WEBASSEMBLY=1 NOWERROR=1 OPTIMIZE=s REGENIE=1 2>&1 | \
+	   sed -e '/linker setting ignored during compilation/d'
+	cp $(MAMEDIR)$*.js $(MAMEDIR)$*.wasm $(OUTPUT)
+
+clean:
+	make -C mame $@
