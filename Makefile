@@ -2,8 +2,9 @@
 IMAGE_NAME ?= builder
 TAG ?= latest
 DOCKERFILE ?= Dockerfile
-GAMES := 20pacgal centiped dkong joust pacman qix
-DRIVERS := $(addprefix mame,$(filter-out joust,$(GAMES)) williams)
+NOTDRV := defender joust invaders milliped 1943mii
+GAMES := 20pacgal centiped defender dkong invaders joust milliped pacman qix
+DRIVERS := $(addprefix mame,$(filter-out $(NOTDRV),$(GAMES)) 1943 mw8080bw williams)
 DOCKER := /usr/bin/docker
 OUTPUT := output#
 JS := $(addsuffix .js,$(addprefix $(OUTPUT)/,$(DRIVERS)))
@@ -17,7 +18,13 @@ all: $(GAMES)
 
 $(GAMES) : $(DRIVERS) 
 
-joust : mamewilliams
+joust defender : mamewilliams
+
+milliped : mamecentiped
+
+invaders: mamemw8080bw
+
+1943mii: mame1943
 
 $(DRIVERS) : $(JS) $(WASM) 
 
