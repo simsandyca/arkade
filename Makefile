@@ -2,8 +2,8 @@
 IMAGE_NAME ?= builder
 TAG ?= latest
 DOCKERFILE ?= Dockerfile
-DRIVERS := pacman 20pacgal williams qix dkong 
 GAMES := pacman 20pacgal joust qix dkong
+DRIVERS := $(addprefix mame,$(filter-out joust,$(GAMES)) williams)
 DOCKER := /usr/bin/docker
 OUTPUT := output#
 JS := $(addsuffix .js,$(addprefix $(OUTPUT)/,$(DRIVERS)))
@@ -15,21 +15,21 @@ CONTAINER := builder
 
 all: $(GAMES)
 
-## Build the Docker image
-docker: Dockerfile Makefile.docker
-	$(DOCKER) build -f $(DOCKERFILE) -t $(IMAGE_NAME):$(TAG) .
+$(GAMES) : $(DRIVERS) 
 
-$(GAMES): $(DRIVERS)
+joust : mamewilliams
 
-joust: williams
-
-$(DRIVERS): $(JS) $(WASM) 
+$(DRIVERS) : $(JS) $(WASM) 
 
 %.js %.wasm: | $(OUTPUT)
 	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/output:/output $(IMAGE_NAME):$(TAG) make $(DRIVERS)
 
 $(OUTPUT):
 	mkdir -p $(OUTPUT)
+
+## Build the Docker image
+docker: Dockerfile Makefile.docker
+	$(DOCKER) build -f $(DOCKERFILE) -t $(IMAGE_NAME):$(TAG) .
 
 clean: 
 	rm -f $(JS) $(WASM)
