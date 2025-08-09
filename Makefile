@@ -2,7 +2,7 @@
 IMAGE_NAME ?= builder
 TAG ?= latest
 DOCKERFILE ?= Dockerfile
-GAMES := pacman 20pacgal joust qix dkong
+GAMES := 20pacgal centiped dkong joust pacman qix
 DRIVERS := $(addprefix mame,$(filter-out joust,$(GAMES)) williams)
 DOCKER := /usr/bin/docker
 OUTPUT := output#
