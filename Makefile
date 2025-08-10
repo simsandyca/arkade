@@ -1,46 +1,46 @@
 # Variables
 IMAGE_NAME ?= builder
 TAG ?= latest
+SHELL := /bin/bash 
 DOCKERFILE ?= Dockerfile
-NOTDRV := defender joust invaders milliped 1943mii
-GAMES := 20pacgal centiped defender dkong invaders joust milliped pacman qix
-DRIVERS := $(addprefix mame,$(filter-out $(NOTDRV),$(GAMES)) 1943 mw8080bw williams)
+GAMES := 1943mii 20pacgal centiped defender dkong gng invaders joust milliped pacman qix
 DOCKER := /usr/bin/docker
-OUTPUT := output#
-JS := $(addsuffix .js,$(addprefix $(OUTPUT)/,$(DRIVERS)))
-WASM := $(addsuffix .wasm,$(addprefix $(OUTPUT)/,$(DRIVERS)))
+BUILD := build#
+EMU   := emu#
+DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
+JSON := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).json)
+HTML := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).html)
 CONTAINER := builder
+# Built recent MAME and ran mame -listxml |gzip > list.xml.gz 
+META_FILE := list.xml.gz
 
 # Targets
-.PHONY: all build help $(GAMES)
+.PHONY: all build help emu $(GAMES) 
 
-all: $(GAMES)
+all: $(GAMES) emu
 
-$(GAMES) : $(DRIVERS) 
+$(GAMES) : $(DIRS) $(JSON) 
 
-joust defender : mamewilliams
+emu: | $(BUILD)/$(EMU)/
+	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/$(BUILD)/$(EMU):/output $(IMAGE_NAME):$(TAG) \
+		make $(foreach json,$(JSON),$(shell cat $(json) |\
+			 jq -r '"mame\(.sourcestub)"'))
 
-milliped : mamecentiped
+$(BUILD): 
+	mkdir -p $@
 
-invaders: mamemw8080bw
+$(BUILD)/%/: | $(BUILD)
+	mkdir -p $@
 
-1943mii: mame1943
-
-$(DRIVERS) : $(JS) $(WASM) 
-
-%.js %.wasm: | $(OUTPUT)
-	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/output:/output $(IMAGE_NAME):$(TAG) make $(DRIVERS)
-
-$(OUTPUT):
-	mkdir -p $(OUTPUT)
-
+%.json : $(META_FILE) gamemeta.py 
+	./gamemeta.py $(META_FILE) $(notdir $*) > $@
+	
 ## Build the Docker image
 docker: Dockerfile Makefile.docker
 	$(DOCKER) build -f $(DOCKERFILE) -t $(IMAGE_NAME):$(TAG) .
 
 clean: 
-	rm -f $(JS) $(WASM)
-	rm -rf $(OUTPUT)
+	rm -rf $(BUILD)
 	$(DOCKER) rm -f $(CONTAINER) || true 
 
 ## Push the Docker image to a registry
