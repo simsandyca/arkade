@@ -17,14 +17,14 @@ META_FILE := list.xml.gz
 # Targets
 .PHONY: all build help emu $(GAMES) 
 
-all: $(GAMES) emu
+all: $(GAMES) emu $(HTML)
 
-$(GAMES) : $(DIRS) $(JSON) 
+$(GAMES) : $(DIRS) $(JSON)
 
 emu: | $(BUILD)/$(EMU)/
-	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/$(BUILD)/$(EMU):/output $(IMAGE_NAME):$(TAG) \
-		make $(foreach json,$(JSON),$(shell cat $(json) |\
-			 jq -r '"mame\(.sourcestub)"'))
+	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/$(BUILD)/$(EMU):/output \
+	$(IMAGE_NAME):$(TAG) \
+		make $(foreach json,$(JSON),$(shell cat $(json) | jq -r '"mame\(.sourcestub)"'))
 
 $(BUILD): 
 	mkdir -p $@
@@ -34,6 +34,10 @@ $(BUILD)/%/: | $(BUILD)
 
 %.json : $(META_FILE) gamemeta.py 
 	./gamemeta.py $(META_FILE) $(notdir $*) > $@
+
+%.html: $(META_FILE) gamehtml.py
+	./gamehtml.py  $*.json > $@
+	cp $(shell cat $*.json | jq -r '"$(BUILD)/$(EMU)/mame\(.sourcestub).{js,wasm}"') $(dir $*)
 	
 ## Build the Docker image
 docker: Dockerfile Makefile.docker
@@ -41,7 +45,7 @@ docker: Dockerfile Makefile.docker
 
 clean: 
 	rm -rf $(BUILD)
-	$(DOCKER) rm -f $(CONTAINER) || true 
+	$(DOCKER) rm -f $(CONTAINER) >/dev/null 2>&1 || true 
 
 ## Push the Docker image to a registry
 push:
