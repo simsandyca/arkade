@@ -10,17 +10,20 @@ EMU   := emu#
 DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
 JSON := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).json)
 HTML := $(foreach game,$(GAMES),$(BUILD)/$(game)/index.html)
+DOCKERFILES := $(foreach game,$(GAMES),Dockerfile.$(game))
+IMAGES := $(GAMES)
 CONTAINER := builder
 META_FILE := list.xml
 EMULARITY := emularity
 EMU_URL   := https://github.com/db48x/emularity.git
 getgame = $(lastword $(subst /, ,$(dir $*)))
 gamejson = $(BUILD)/$(getgame)/$(getgame).json
+dock2json = $(BUILD)/$(subst Dockerfile.,,$@)/$(subst Dockerfile.,,$@).json
 
 # Targets
-.PHONY: all build help emu 
+.PHONY: all build help emu $(IMAGES)
 
-all: $(DIRS) $(JSON) emu $(HTML)
+all: $(DIRS) $(JSON) emu $(HTML) $(IMAGES)
 
 emu: | $(BUILD)/$(EMU)/ 
 	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/$(BUILD)/$(EMU):/output \
@@ -44,6 +47,12 @@ $(EMULARITY):
 
 $(HTML): $(META_FILE) gamehtml.py $(EMULARITY) 
 
+$(DOCKERFILES) : $(JSON) gamedocker.py
+	./gamedocker.py $(dock2json) > $@
+
+$(IMAGES): $(DOCKERFILES)
+	$(DOCKER) build -f Dockerfile.$(@) -t $@ .
+
 %.html: $(JSON) 
 	./gamehtml.py  $(gamejson) > $@
 	cp $(shell cat $(gamejson) | jq -r '"$(BUILD)/$(EMU)/mame\(.sourcestub).{js,wasm}"') $(dir $*)
@@ -54,7 +63,7 @@ docker: Dockerfile Makefile.docker
 	$(DOCKER) build -f $(DOCKERFILE) -t $(IMAGE_NAME):$(TAG) .
 
 clean: 
-	rm -rf $(BUILD) $(META_FILE) $(EMULARITY)
+	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) $(DOCKERFILES)
 	$(DOCKER) rm -f $(CONTAINER) >/dev/null 2>&1 || true 
 
 ## Push the Docker image to a registry

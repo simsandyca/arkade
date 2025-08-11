@@ -4,14 +4,15 @@ import json
 import sys
 import os 
 
+jfile=sys.argv[1]
 try:
-    with open(sys.argv[1], 'r') as file:
+    with open(jfile, 'r') as file:
         data = json.load(file)
         file.close()
 except FileNotFoundError:
-    print("Error: 'example.json' not found.")
+    print(f"Error: '{jfile}' not found.")
 except json.JSONDecodeError:
-    print("Error: Could not decode JSON from 'example.json'.")
+    print(f"Error: Could not decode JSON from '{jfile}'.")
 
 description = data['description']
 name = data['name']
