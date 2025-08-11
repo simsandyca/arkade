@@ -1,5 +1,5 @@
 # Variables
-IMAGE_NAME ?= builder
+IMAGE_NAME ?= mamebuilder
 TAG ?= latest
 SHELL := /bin/bash 
 DOCKERFILE ?= Dockerfile
