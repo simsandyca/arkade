@@ -18,6 +18,9 @@ name = data['name']
 driver = f"mame{data['sourcestub']}"
 w = data['width']
 h = data['height']
+r = int(data['rotate'])
+if r == 90 or r == 270:
+    w,h = h,w
 scale = 3
      
 html = f"""

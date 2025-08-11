@@ -55,7 +55,7 @@ def machine(data):
         disa = display.attrib
         info['rotate'] = disa.get('rotate', '0')
         info['height'] = disa.get('height', '240')
-        info['width'] = disa.get('height', '292')
+        info['width'] = disa.get('width', '292')
 
     roms = []
     for r in data.findall('rom'):
