@@ -80,11 +80,7 @@ def get_machine(name, data):
     minfo = machine(g[0])
     return minfo
 
-try: 
-    with gzip.open(sys.argv[1], 'rb') as gz_file:
-        game = get_machine(sys.argv[2], xmlparse(gz_file).getroot())
-        print(json.dumps(game, indent=2))
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
+game = get_machine(sys.argv[2], xmlparse(sys.argv[1]).getroot())
+print(json.dumps(game, indent=2))
     
 

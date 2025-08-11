@@ -9,19 +9,16 @@ BUILD := build#
 EMU   := emu#
 DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
 JSON := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).json)
-HTML := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).html)
+HTML := $(foreach game,$(GAMES),$(BUILD)/$(game)/index.html)
 CONTAINER := builder
-# Built recent MAME and ran mame -listxml |gzip > list.xml.gz 
-META_FILE := list.xml.gz
+META_FILE := list.xml
 
 # Targets
-.PHONY: all build help emu $(GAMES) 
+.PHONY: all build help emu $(HTML)
 
-all: $(GAMES) emu $(HTML)
+all: $(DIRS) $(JSON) emu $(HTML)
 
-$(GAMES) : $(DIRS) $(JSON)
-
-emu: | $(BUILD)/$(EMU)/
+emu: | $(BUILD)/$(EMU)/ 
 	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/$(BUILD)/$(EMU):/output \
 	$(IMAGE_NAME):$(TAG) \
 		make $(foreach json,$(JSON),$(shell cat $(json) | jq -r '"mame\(.sourcestub)"'))
@@ -32,10 +29,13 @@ $(BUILD):
 $(BUILD)/%/: | $(BUILD)
 	mkdir -p $@
 
+$(META_FILE): 
+	$(DOCKER) run --rm --name $(CONTAINER) $(IMAGE_NAME):$(TAG) mame -listxml $(GAMES) > $(META_FILE)
+
 %.json : $(META_FILE) gamemeta.py 
 	./gamemeta.py $(META_FILE) $(notdir $*) > $@
 
-%.html: $(META_FILE) gamehtml.py
+%.html: $(META_FILE) gamehtml.py $(JSON)
 	./gamehtml.py  $*.json > $@
 	cp $(shell cat $*.json | jq -r '"$(BUILD)/$(EMU)/mame\(.sourcestub).{js,wasm}"') $(dir $*)
 	
@@ -44,7 +44,7 @@ docker: Dockerfile Makefile.docker
 	$(DOCKER) build -f $(DOCKERFILE) -t $(IMAGE_NAME):$(TAG) .
 
 clean: 
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) $(META_FILE)
 	$(DOCKER) rm -f $(CONTAINER) >/dev/null 2>&1 || true 
 
 ## Push the Docker image to a registry
