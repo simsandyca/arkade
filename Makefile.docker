@@ -13,7 +13,7 @@ $(OUTPUT)%.js $(OUTPUT)%.wasm:
 	source /emsdk/emsdk_env.sh && \
 	emmake make -C mame -j $(shell nproc) SUBTARGET=$* SOURCES=src/mame/drivers/$(DRIVER).cpp \
 	   ARCHOPTS="$(ARCHOPTS)"\
-	   NO_OPENGL=1 WEBASSEMBLY=1 NOWERROR=1 OPTIMIZE=s REGENIE=1 2>&1 | \
+	   NO_OPENGL=0 WEBASSEMBLY=1 NOWERROR=1 OPTIMIZE=s REGENIE=1 2>&1 | \
 	   sed -e '/linker setting ignored during compilation/d'
 	cp $(MAMEDIR)$*.js $(MAMEDIR)$*.wasm $(OUTPUT)
 
