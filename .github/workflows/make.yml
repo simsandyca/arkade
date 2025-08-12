@@ -5,7 +5,7 @@ on:
 jobs:
   builder: 
     environment: Games
-    runs-on: self-hosted
+    runs-on: www
     steps:
       - uses: actions/checkout@v4
       - name: Make the mamebuilder
@@ -15,7 +15,7 @@ jobs:
           docker push 192.168.1.1:5000/mamebuilder
   games:
     environment: Games
-    runs-on: self-hosted
+    runs-on: www
     steps:
       - uses: actions/checkout@v4
       - name: Make the game images
