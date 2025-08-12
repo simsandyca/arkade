@@ -2,4 +2,4 @@ build
 list.xml
 Dockerfile.*
 emularity
-roms
+output

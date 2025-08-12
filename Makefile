@@ -11,7 +11,7 @@ DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
 JSON := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).json)
 HTML := $(foreach game,$(GAMES),$(BUILD)/$(game)/index.html)
 DOCKERFILES := $(foreach game,$(GAMES),Dockerfile.$(game))
-REGISTRY := 192.168.1.1:5000
+REGISTRY ?= 192.168.1.1:5000
 IMAGES := $(GAMES)
 CONTAINER := builder
 META_FILE := list.xml
@@ -62,8 +62,10 @@ $(IMAGES): $(DOCKERFILES)
 	cp -r $(EMULARITY)/*.js $(EMULARITY)/*.js.map $(EMULARITY)/logo $(EMULARITY)/images $(dir $*)
 	
 ## Build the Docker image
-docker: Dockerfile Makefile.docker
-	$(DOCKER) build -f $(DOCKERFILE) -t $(IMAGE_NAME):$(TAG) .
+$(IMAGE_NAME): Dockerfile Makefile.docker
+	$(DOCKER) build -f $(DOCKERFILE) -t $@:$(TAG) .
+	$(DOCKER) tag $@ $(REGISTRY)/$@
+	$(DOCKER) push $(REGISTRY)/$@
 
 clean: 
 	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) $(DOCKERFILES)
