@@ -24,8 +24,7 @@ if r == 90 or r == 270:
     w,h = h,w
 scale = 3
      
-docker = f"""
-FROM nginx
+docker = f"""FROM arm64v8/nginx
 
 ADD nginx/default /etc/nginx/conf.d/default.conf
 

@@ -11,6 +11,7 @@ DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
 JSON := $(foreach game,$(GAMES),$(BUILD)/$(game)/$(game).json)
 HTML := $(foreach game,$(GAMES),$(BUILD)/$(game)/index.html)
 DOCKERFILES := $(foreach game,$(GAMES),Dockerfile.$(game))
+REGISTRY := 192.168.1.1:5000
 IMAGES := $(GAMES)
 CONTAINER := builder
 META_FILE := list.xml
@@ -51,7 +52,9 @@ $(DOCKERFILES) : $(JSON) gamedocker.py
 	./gamedocker.py $(dock2json) > $@
 
 $(IMAGES): $(DOCKERFILES)
-	$(DOCKER) build -f Dockerfile.$(@) -t $@ .
+	$(DOCKER) buildx build --platform linux/arm64 -f Dockerfile.$@ -t $@ .
+	$(DOCKER) tag $@ $(REGISTRY)/$@
+	$(DOCKER) push $(REGISTRY)/$@
 
 %.html: $(JSON) 
 	./gamehtml.py  $(gamejson) > $@
