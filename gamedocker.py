@@ -30,7 +30,7 @@ ADD nginx/default /etc/nginx/conf.d/default.conf
 
 RUN mkdir -p /var/www/html /var/www/html/roms
 
-ADD build/{name}/* /var/www/html
+ADD index.html *.js *.wasm *.js.map logo images /var/www/html
 """
 print(docker)
 
