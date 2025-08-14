@@ -15,6 +15,7 @@ jobs:
           docker push docker-registry:5000/mamebuilder
   games:
     environment: Games
+    needs: [builder]
     runs-on: www
     steps:
       - uses: actions/checkout@v4
