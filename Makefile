@@ -4,12 +4,14 @@ $(strip $(firstword $(foreach game,$(GAMES),$(findstring $(game),$(1)))))
 endef
 
 # Variables
+CHART_VER := 0.1.5
 BUILD_IMAGE ?= mamebuilder
 TAG ?= latest
 SHELL := /bin/bash 
 BUILD_DOCKERFILE ?= Dockerfile
 GAMES := 1943mii 20pacgal centiped defender dkong gng invaders joust milliped pacman qix truxton
 DOCKER := /usr/bin/docker
+HELM   := /usr/local/bin/helm
 BUILD := build#
 EMU   := emu#
 DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
@@ -84,7 +86,28 @@ $(BUILD_IMAGE): Dockerfile Makefile.docker
 push:
 	$(DOCKER) push $(BUILD_IMAGE):$(TAG)
 
+package:
+	$(HELM) package --version $(CHART_VER) helm/game 
+
+install:
+	@for game in $(GAMES) ; do \
+	    $(HELM) install $$game game-$(CHART_VER).tgz \
+	        --set image.repository="docker-registry:5000/$$game" \
+	        --set image.tag='latest' \
+	        --set fullnameOverride="$$game" \
+	        --create-namespace \
+	        --namespace games ;\
+	done
+
+upgrade:
+	@for game in $(GAMES) ; do \
+	    $(HELM) upgrade $$game game-$(CHART_VER).tgz \
+	        --set image.repository="docker-registry:5000/$$game" \
+	        --set image.tag='latest' \
+	        --set fullnameOverride="$$game" \
+	        --namespace games ;\
+	done
 clean: 
-	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) 
+	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) game-$(CHART_VER).tgz
 	$(DOCKER) rm -f $(CONTAINER) >/dev/null 2>&1 || true 
 

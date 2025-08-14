@@ -1,0 +1,18 @@
+{{- if .Values.ingressroute.enabled -}}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "game.fullname" . }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`{{ include "game.fullname" . }}`)
+      priority: 10
+      services:
+        - name: svc-{{ include "game.fullname" . }}
+          port: 80
+  tls:
+    certResolver: default
+{{- end }}
