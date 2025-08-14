@@ -111,6 +111,7 @@ upgrade:
 
 argocd_create:
 	kubectl create ns games || true 
+	kubectl apply -f roms-pvc.yaml 
 	@for game in $(GAMES) ; do \
 	    $(ARGOCD) app create $$game \
 	        --repo https://github.com/simsandyca/arkade.git \
