@@ -12,6 +12,7 @@ BUILD_DOCKERFILE ?= Dockerfile
 GAMES := 1943mii 20pacgal centiped defender dkong gng invaders joust milliped pacman qix truxton
 DOCKER := /usr/bin/docker
 HELM   := /usr/local/bin/helm
+ARGOCD := /usr/local/bin/argocd
 BUILD := build#
 EMU   := emu#
 DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
@@ -107,6 +108,25 @@ upgrade:
 	        --set fullnameOverride="$$game" \
 	        --namespace games ;\
 	done
+
+argocd_create:
+	kubectl create ns games || true 
+	@for game in $(GAMES) ; do \
+	    $(ARGOCD) app create $$game \
+	        --repo https://github.com/simsandyca/arkade.git \
+	        --path helm/game \
+	        --dest-server https://kubernetes.default.svc  \
+	        --dest-namespace games \
+	        --helm-set image.repository="docker-registry:5000/$$game" \
+	        --helm-set image.tag='latest' \
+	        --helm-set fullnameOverride="$$game" ;\
+	done
+
+argocd_sync:
+	@for game in $(GAMES) ; do \
+	    $(ARGOCD) app sync $$game ; \
+	done
+
 clean: 
 	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) game-$(CHART_VER).tgz
 	$(DOCKER) rm -f $(CONTAINER) >/dev/null 2>&1 || true 
