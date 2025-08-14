@@ -11,8 +11,8 @@ jobs:
       - name: Make the mamebuilder
         run: |
           make mamebuilder
-          docker tag mamebuilder 192.168.1.1:5000/mamebuilder
-          docker push 192.168.1.1:5000/mamebuilder
+          docker tag mamebuilder docker-registry:5000/mamebuilder
+          docker push docker-registry:5000/mamebuilder
   games:
     environment: Games
     runs-on: www
