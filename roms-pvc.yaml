@@ -5,8 +5,8 @@ metadata:
   namespace: games
 spec:
   accessModes:
-    - ReadWriteOnce
-  storageClassName: longhorn 
+    - ReadWriteMany
+  storageClassName: local-path 
   resources:
     requests:
       storage: 128Mi
