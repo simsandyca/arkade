@@ -5,7 +5,7 @@ metadata:
   namespace: games
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: longhorn 
   resources:
     requests:
