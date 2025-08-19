@@ -4,7 +4,7 @@ $(strip $(firstword $(foreach game,$(GAMES),$(findstring $(game),$(1)))))
 endef
 
 # Variables
-CHART_VER := 0.1.5
+CHART_VER := 0.1.6
 BUILD_IMAGE ?= mamebuilder
 TAG ?= latest
 SHELL := /bin/bash 
