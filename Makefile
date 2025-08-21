@@ -4,7 +4,7 @@ $(strip $(firstword $(foreach game,$(GAMES),$(findstring $(game),$(1)))))
 endef
 
 # Variables
-CHART_VER := 0.1.5
+CHART_VER := 0.1.6
 BUILD_IMAGE ?= mamebuilder
 TAG ?= latest
 SHELL := /bin/bash 
@@ -13,6 +13,7 @@ GAMES := 1943mii 20pacgal circus centiped defender dkong gng invaders joust mill
 DOCKER := /usr/bin/docker
 HELM   := /usr/local/bin/helm
 ARGOCD := /usr/local/bin/argocd
+KUBECTL:= /usr/local/bin/kubectl
 BUILD := build#
 EMU   := emu#
 DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
@@ -100,6 +101,7 @@ install:
 	        --create-namespace \
 	        --namespace games ;\
 	done
+	@$(KUBECTL) apply -f roms-pvc.yaml 
 
 upgrade:
 	@for game in $(GAMES) ; do \
@@ -111,8 +113,8 @@ upgrade:
 	done
 
 argocd_create:
-	kubectl create ns games || true 
-	kubectl apply -f roms-pvc.yaml 
+	@$(KUBECTL) create ns games || true 
+	@$(KUBECTL) apply -f roms-pvc.yaml 
 	@for game in $(GAMES) ; do \
 	    $(ARGOCD) app create $$game \
 	        --repo https://github.com/simsandyca/arkade.git \
