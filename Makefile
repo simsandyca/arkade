@@ -75,7 +75,8 @@ $(IMAGES): $(DOCKERFILES)
 %.html: $(JSON) 
 	./gamehtml.py  $(gamejson) > $@
 	cp $(shell cat $(gamejson) | jq -r '"$(BUILD)/$(EMU)/mame\(.sourcestub).{js,wasm}"') $(dir $*)
-	cp -r $(EMULARITY)/*.js $(EMULARITY)/*.js.map $(EMULARITY)/logo $(EMULARITY)/images nginx $(dir $*)
+	cp -r $(EMULARITY)/*.js $(EMULARITY)/*.js.map $(EMULARITY)/logo $(EMULARITY)/images favicon.ico nginx $(dir $*)
+	cp -r $(EMULARITY)/*.js $(EMULARITY)/*.js.map $(EMULARITY)/logo $(EMULARITY)/images favicon.ico nginx $(dir $*)
 	
 ## Build the Docker image
 $(BUILD_IMAGE): Dockerfile Makefile.docker

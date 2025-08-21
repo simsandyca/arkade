@@ -28,9 +28,11 @@ docker = f"""FROM arm64v8/nginx
 
 ADD nginx/default /etc/nginx/conf.d/default.conf
 
-RUN mkdir -p /var/www/html /var/www/html/roms
+RUN mkdir -p /var/www/html /var/www/html/roms /var/www/html/images /var/www/html/logo
 
-ADD index.html *.js *.wasm *.js.map logo images /var/www/html
+ADD favicon.ico index.html *.js *.wasm *.js.map logo images /var/www/html
+ADD logo/* /var/www/html/logo
+ADD images/* images /var/www/html/images
 """
 print(docker)
 
