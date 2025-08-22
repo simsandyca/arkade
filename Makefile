@@ -45,7 +45,8 @@ DOCKERFILES   := $(foreach game,$(GAMES),$(BUILD)/$(game)/Dockerfile)
 IMAGES        := $(GAMES)
 CONTAINER     := builder
 META_FILE     := mame_meta_data.xml
-EMULARITY     := emularity
+EMULARITY     := emularity#
+ARCH          := linux/arm64#
 EMU_URL       := https://github.com/db48x/emularity.git
 gamejson       = $(BUILD)/$(call getgame,$*)/$(call getgame,$*).json
 dock2json      = $(BUILD)/$(call getgame,$@)/$(call getgame,$@).json
@@ -94,7 +95,7 @@ $(DOCKERFILES) : $(JSON) gamedocker.py
 
 $(IMAGES): TAG = $(NEXT_VERSION)
 $(IMAGES): $(DOCKERFILES)
-	$(DOCKER) buildx build --platform linux/arm64 -t $(REGISTRY)/$@ $(BUILD)/$@:$(TAG)
+	$(DOCKER) buildx build --platform $(ARCH) -t $(REGISTRY)/$@:$(TAG) $(BUILD)/$@
 	$(DOCKER) push $(REGISTRY)/$@:$(TAG)
 
 ## For each "index.html" target build up the "/var/www/html" directory needed to serve the game. 
