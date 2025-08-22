@@ -85,13 +85,8 @@ $(IMAGES): $(DOCKERFILES)
 	
 ## Build the Docker image
 $(BUILD_IMAGE): Dockerfile Makefile.docker
-	$(DOCKER) build -f $(BUILD_DOCKERFILE) -t $@:$(TAG) .
-	$(DOCKER) tag $@:$(TAG) $(REGISTRY)/$@:$(TAG) .
-	$(DOCKER) push $(REGISTRY)/$@:$(TAG)
-
-## Push the Docker image to a registry
-push:
-	$(DOCKER) push $(BUILD_IMAGE):$(TAG)
+	$(DOCKER) build -f $(BUILD_DOCKERFILE) -t $(REGISTRY)/$@:$(BUILD_TAG) .
+	$(DOCKER) push $(REGISTRY)/$@:$(BUILD_TAG)
 
 package:
 	$(HELM) package --version $(CHART_VER) helm/game 
@@ -100,7 +95,7 @@ install:
 	@for game in $(GAMES) ; do \
 	    $(HELM) install $$game game-$(CHART_VER).tgz \
 	        --set image.repository="$(REGISTRY)/$$game" \
-	        --set image.tag='latest' \
+	        --set image.tag='$(TAG)' \
 	        --set fullnameOverride="$$game" \
 	        --create-namespace \
 	        --namespace games ;\
@@ -111,7 +106,7 @@ upgrade:
 	@for game in $(GAMES) ; do \
 	    $(HELM) upgrade $$game game-$(CHART_VER).tgz \
 	        --set image.repository="$(REGISTRY)/$$game" \
-	        --set image.tag='latest' \
+	        --set image.tag='$(TAG)' \
 	        --set fullnameOverride="$$game" \
 	        --namespace games ;\
 	done
@@ -128,13 +123,14 @@ argocd_create:
 	            --dest-server https://kubernetes.default.svc  \
 	            --dest-namespace games \
 	            --helm-set image.repository="$(REGISTRY)/$$game" \
-	            --helm-set image.tag='latest' \
+	            --helm-set image.tag='$(TAG)' \
 	            --helm-set fullnameOverride="$$game" ;\
 	    fi ;\
 	done
 
 argocd_sync:
 	@for game in $(GAMES) ; do \
+	    $(ARGOCD) app set $$game --helm-set image.tag='$(TAG)' ; \
 	    $(ARGOCD) app sync $$game ; \
 	done
 
