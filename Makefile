@@ -73,9 +73,10 @@ $(HTML): $(META_FILE) gamehtml.py $(EMULARITY)
 $(DOCKERFILES) : $(JSON) gamedocker.py
 	./gamedocker.py $(dock2json) > $@
 
+$(IMAGES): TAG = $(NEXT_VERSION)
 $(IMAGES): $(DOCKERFILES)
-	$(DOCKER) buildx build --platform linux/arm64 -t $(REGISTRY)/$@ $(BUILD)/$@
-	$(DOCKER) push $(REGISTRY)/$@
+	$(DOCKER) buildx build --platform linux/arm64 -t $(REGISTRY)/$@ $(BUILD)/$@:$(TAG)
+	$(DOCKER) push $(REGISTRY)/$@:$(TAG)
 
 ## for each index.html file - create that file and copy in everything needed to do the docker build
 %.html: $(JSON) 
