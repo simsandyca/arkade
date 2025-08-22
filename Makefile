@@ -31,6 +31,7 @@ CHART_VER      := 0.1.6
 BUILD_IMAGE      := mamebuilder
 BUILD_TAG        := latest
 BUILD_DOCKERFILE := Dockerfile
+GAME_DOCKERFILE  := Dockerfile.game
 
 ## Make Variables
 GAMES         := 1943mii 20pacgal circus centiped defender dkong gng 
@@ -52,7 +53,7 @@ gamejson       = $(BUILD)/$(call getgame,$*)/$(call getgame,$*).json
 dock2json      = $(BUILD)/$(call getgame,$@)/$(call getgame,$@).json
 
 ## Targets
-.PHONY: all build emu $(IMAGES) games update_version get_version
+.PHONY: all build emu $(IMAGES) games update_version get_version 
 
 all: $(DIRS) $(JSON) emu $(HTML) $(IMAGES) 
 
@@ -90,8 +91,8 @@ $(EMULARITY):
 
 $(HTML): $(META_FILE) gamehtml.py $(EMULARITY) 
 
-$(DOCKERFILES) : $(JSON) gamedocker.py
-	./gamedocker.py $(dock2json) > $@
+$(DOCKERFILES) :
+	cat $(GAME_DOCKERFILE) > $@
 
 $(IMAGES): TAG = $(NEXT_VERSION)
 $(IMAGES): $(DOCKERFILES)

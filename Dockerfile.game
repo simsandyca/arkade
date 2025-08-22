@@ -1,0 +1,9 @@
+FROM arm64v8/nginx
+
+ADD nginx/default /etc/nginx/conf.d/default.conf
+
+RUN mkdir -p /var/www/html /var/www/html/roms /var/www/html/images /var/www/html/logo
+
+ADD favicon.ico index.html *.js *.wasm *.js.map /var/www/html
+ADD logo/* /var/www/html/logo
+ADD images/* /var/www/html/images
