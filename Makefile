@@ -115,14 +115,17 @@ argocd_create:
 	@$(KUBECTL) create ns games || true 
 	@$(KUBECTL) apply -f roms-pvc.yaml 
 	@for game in $(GAMES) ; do \
-	    $(ARGOCD) app create $$game \
-	        --repo https://github.com/simsandyca/arkade.git \
-	        --path helm/game \
-	        --dest-server https://kubernetes.default.svc  \
-	        --dest-namespace games \
-	        --helm-set image.repository="docker-registry:5000/$$game" \
-	        --helm-set image.tag='latest' \
-	        --helm-set fullnameOverride="$$game" ;\
+	    $(ARGOCD) app get $$game > /dev/null 2>&1  ; \
+	    if [[ $$? != 0 ]] ; then \
+	        $(ARGOCD) app create $$game \
+	            --repo https://github.com/simsandyca/arkade.git \
+	            --path helm/game \
+	            --dest-server https://kubernetes.default.svc  \
+	            --dest-namespace games \
+	            --helm-set image.repository="$$REGISTRY/$$game" \
+	            --helm-set image.tag='latest' \
+	            --helm-set fullnameOverride="$$game" ;\
+	    fi ;\
 	done
 
 argocd_sync:

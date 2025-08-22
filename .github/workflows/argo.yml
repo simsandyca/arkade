@@ -1,0 +1,25 @@
+
+name: Argo
+on:
+  workflow_dispatch:
+env: 
+  ARGOCD_AUTH_TOKEN: "${{ secrets.ARGOCD_AUTH_TOKEN }}"
+
+jobs:
+  create: 
+    environment: Games
+    runs-on: bunsen
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create the ArgoCD projects 
+        run: |
+          make argocd_create 
+  sync:
+    environment: Games
+    needs: [create]
+    runs-on: bunsen
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syncronize the ArgoCD projects
+        run: |
+          make argocd_sync
