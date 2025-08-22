@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 env:
   REGISTRY: "${{ vars.REGISTRY }}"
+  VERSION: "${{ vars.VERSION }}"
 
 jobs:
   builder: 

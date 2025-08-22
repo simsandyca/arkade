@@ -4,9 +4,12 @@ $(strip $(firstword $(foreach game,$(GAMES),$(findstring $(game),$(1)))))
 endef
 
 # Variables
+VERSION ?= 0.0.1
+NEXT_VERSION = $(shell ./incrementpatch.py $(VERSION))
 CHART_VER := 0.1.6
-BUILD_IMAGE ?= mamebuilder
-TAG ?= latest
+BUILD_IMAGE := mamebuilder
+TAG := $(NEXT_VERSION)
+BUILD_TAG := latest
 SHELL := /bin/bash 
 BUILD_DOCKERFILE ?= Dockerfile
 GAMES := 1943mii 20pacgal circus centiped defender dkong gng invaders joust milliped pacman qix robby supertnk topgunnr truxton victory
@@ -14,6 +17,7 @@ DOCKER := $(shell which docker)
 HELM   := /usr/local/bin/helm
 ARGOCD := /usr/local/bin/argocd
 KUBECTL:= /usr/local/bin/kubectl
+GH := $(shell which gh)
 BUILD := build#
 EMU   := emu#
 DIRS := $(foreach game,$(GAMES),$(BUILD)/$(game)/)
@@ -31,14 +35,14 @@ dock2json = $(BUILD)/$(call getgame,$@)/$(call getgame,$@).json
 REPO := https://github.com/simsandyca/arkade.git
 
 # Targets
-.PHONY: all build emu $(IMAGES) games
+.PHONY: all build emu $(IMAGES) games version
 
-all: $(DIRS) $(JSON) emu $(HTML) $(IMAGES)
+all: $(DIRS) $(JSON) emu $(HTML) $(IMAGES) version
 
 ## Build the emulator directory using the mamebuilder image - use sort to uniquify the list
 emu: | $(BUILD)/$(EMU)/ 
 	$(DOCKER) run --rm --name $(CONTAINER) -v $(shell pwd)/$(BUILD)/$(EMU):/output \
-	$(REGISTRY)/$(BUILD_IMAGE):$(TAG) \
+	$(REGISTRY)/$(BUILD_IMAGE):$(BUILD_TAG) \
 		make $(sort $(foreach json,$(JSON),$(shell cat $(json) | jq -r '"mame\(.sourcestub)"')))
 
 ## just dump the game list 
@@ -55,7 +59,7 @@ $(BUILD)/%/: | $(BUILD)
 ## dump the meta data for all games (about 300Mb).  This run is just for the games in 
 ## our build list.
 $(META_FILE): 
-	$(DOCKER) run --rm --name $(CONTAINER) $(REGISTRY)/$(BUILD_IMAGE):$(TAG) mame -listxml $(GAMES) > $(META_FILE)
+	$(DOCKER) run --rm --name $(CONTAINER) $(REGISTRY)/$(BUILD_IMAGE):$(BUILD_TAG) mame -listxml $(GAMES) > $(META_FILE)
 
 ##  parse-up the XML for one game and dump it as json
 %.json : $(META_FILE) gamemeta.py 
@@ -82,8 +86,8 @@ $(IMAGES): $(DOCKERFILES)
 ## Build the Docker image
 $(BUILD_IMAGE): Dockerfile Makefile.docker
 	$(DOCKER) build -f $(BUILD_DOCKERFILE) -t $@:$(TAG) .
-	$(DOCKER) tag $@ $(REGISTRY)/$@
-	$(DOCKER) push $(REGISTRY)/$@
+	$(DOCKER) tag $@:$(TAG) $(REGISTRY)/$@:$(TAG) .
+	$(DOCKER) push $(REGISTRY)/$@:$(TAG)
 
 ## Push the Docker image to a registry
 push:
@@ -133,6 +137,9 @@ argocd_sync:
 	@for game in $(GAMES) ; do \
 	    $(ARGOCD) app sync $$game ; \
 	done
+
+version:
+	$(GH) variables set VERSION --body "$(TAG)"
 
 clean: 
 	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) game-$(CHART_VER).tgz
