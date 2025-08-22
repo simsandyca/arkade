@@ -23,5 +23,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Make the game images
         run: |
+          make get_version
           make 
-          echo done
+          make update_version
