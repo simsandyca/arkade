@@ -8,7 +8,7 @@ VERSION ?= 0.0.1
 NEXT_VERSION = $(shell ./incrementpatch.py $(VERSION))
 CHART_VER := 0.1.6
 BUILD_IMAGE := mamebuilder
-TAG := $(NEXT_VERSION)
+TAG := $(VERSION)
 BUILD_TAG := latest
 SHELL := /bin/bash 
 BUILD_DOCKERFILE ?= Dockerfile
@@ -35,9 +35,9 @@ dock2json = $(BUILD)/$(call getgame,$@)/$(call getgame,$@).json
 REPO := https://github.com/simsandyca/arkade.git
 
 # Targets
-.PHONY: all build emu $(IMAGES) games version
+.PHONY: all build emu $(IMAGES) games update_version get_version
 
-all: $(DIRS) $(JSON) emu $(HTML) $(IMAGES) version
+all: $(DIRS) $(JSON) emu $(HTML) $(IMAGES) 
 
 ## Build the emulator directory using the mamebuilder image - use sort to uniquify the list
 emu: | $(BUILD)/$(EMU)/ 
@@ -83,7 +83,7 @@ $(IMAGES): $(DOCKERFILES)
 	cp $(shell cat $(gamejson) | jq -r '"$(BUILD)/$(EMU)/mame\(.sourcestub).{js,wasm}"') $(dir $*)
 	cp -r $(EMULARITY)/*.js $(EMULARITY)/*.js.map $(EMULARITY)/logo $(EMULARITY)/images favicon.ico nginx $(dir $*)
 	
-## Build the Docker image
+## Build the builder image
 $(BUILD_IMAGE): Dockerfile Makefile.docker
 	$(DOCKER) build -f $(BUILD_DOCKERFILE) -t $(REGISTRY)/$@:$(BUILD_TAG) .
 	$(DOCKER) push $(REGISTRY)/$@:$(BUILD_TAG)
@@ -91,6 +91,7 @@ $(BUILD_IMAGE): Dockerfile Makefile.docker
 package:
 	$(HELM) package --version $(CHART_VER) helm/game 
 
+install: TAG = $(VERSION)
 install:
 	@for game in $(GAMES) ; do \
 	    $(HELM) install $$game game-$(CHART_VER).tgz \
@@ -102,6 +103,7 @@ install:
 	done
 	@$(KUBECTL) apply -f roms-pvc.yaml 
 
+upgrade: TAG = $(NEXT_VERSION)
 upgrade:
 	@for game in $(GAMES) ; do \
 	    $(HELM) upgrade $$game game-$(CHART_VER).tgz \
@@ -111,6 +113,7 @@ upgrade:
 	        --namespace games ;\
 	done
 
+argocd_create: TAG = $(VERSION)
 argocd_create:
 	@$(KUBECTL) create ns games || true 
 	@$(KUBECTL) apply -f roms-pvc.yaml 
@@ -128,14 +131,18 @@ argocd_create:
 	    fi ;\
 	done
 
-argocd_sync:
+argocd_sync: TAG = $(VERSION)
+argocd_sync: 
 	@for game in $(GAMES) ; do \
 	    $(ARGOCD) app set $$game --helm-set image.tag='$(TAG)' ; \
 	    $(ARGOCD) app sync $$game ; \
 	done
 
-version:
-	$(GH) variables set VERSION --body "$(TAG)"
+update_version:
+	@$(GH) variable set VERSION --env Games --body "$(TAG)"
+
+get_version: 
+	@$(GH) variable list --env Games --json name,value --jq '.[]|select(.name=="VERSION")|.value'
 
 clean: 
 	rm -rf $(BUILD) $(META_FILE) $(EMULARITY) game-$(CHART_VER).tgz
