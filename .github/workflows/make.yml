@@ -1,6 +1,8 @@
 name: Make
 on:
   workflow_dispatch:
+env:
+  REGISTRY: "${{ vars.REGISTRY }}"
 
 jobs:
   builder: 
@@ -10,9 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Make the mamebuilder
         run: |
+          echo REGISTRY = $REGISTRY 
           make mamebuilder
-          docker tag mamebuilder $REGISTRY/mamebuilder
-          docker push $REGISTRY/mamebuilder
   games:
     environment: Games
     needs: [builder]
