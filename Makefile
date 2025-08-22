@@ -28,6 +28,7 @@ EMULARITY := emularity
 EMU_URL   := https://github.com/db48x/emularity.git
 gamejson = $(BUILD)/$(call getgame,$*)/$(call getgame,$*).json
 dock2json = $(BUILD)/$(call getgame,$@)/$(call getgame,$@).json
+REPO := https://github.com/simsandyca/arkade.git
 
 # Targets
 .PHONY: all build emu $(IMAGES) games
@@ -94,7 +95,7 @@ package:
 install:
 	@for game in $(GAMES) ; do \
 	    $(HELM) install $$game game-$(CHART_VER).tgz \
-	        --set image.repository="docker-registry:5000/$$game" \
+	        --set image.repository="$(REGISTRY)/$$game" \
 	        --set image.tag='latest' \
 	        --set fullnameOverride="$$game" \
 	        --create-namespace \
@@ -105,7 +106,7 @@ install:
 upgrade:
 	@for game in $(GAMES) ; do \
 	    $(HELM) upgrade $$game game-$(CHART_VER).tgz \
-	        --set image.repository="docker-registry:5000/$$game" \
+	        --set image.repository="$(REGISTRY)/$$game" \
 	        --set image.tag='latest' \
 	        --set fullnameOverride="$$game" \
 	        --namespace games ;\
@@ -118,11 +119,11 @@ argocd_create:
 	    $(ARGOCD) app get $$game > /dev/null 2>&1  ; \
 	    if [[ $$? != 0 ]] ; then \
 	        $(ARGOCD) app create $$game \
-	            --repo https://github.com/simsandyca/arkade.git \
+	            --repo $(REPO) \
 	            --path helm/game \
 	            --dest-server https://kubernetes.default.svc  \
 	            --dest-namespace games \
-	            --helm-set image.repository="$$REGISTRY/$$game" \
+	            --helm-set image.repository="$(REGISTRY)/$$game" \
 	            --helm-set image.tag='latest' \
 	            --helm-set fullnameOverride="$$game" ;\
 	    fi ;\
