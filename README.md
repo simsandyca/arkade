@@ -14,6 +14,7 @@ To deploy
    - kubectl (access to a cluster)
    - helm
    - argocd
+   - gh
 
 ## Instructions
 
