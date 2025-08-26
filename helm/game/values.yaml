@@ -114,11 +114,16 @@ volumes:
   - name: roms
     persistentVolumeClaim:
       claimName: roms
+  - name: art
+    persistentVolumeClaim:
+      claimName: art
 
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts: 
   - name: roms
     mountPath: /var/www/html/roms
+  - name: art
+    mountPath: /var/www/html/art
 
 nodeSelector: {}
 

@@ -25,7 +25,7 @@ GH      := $(shell which gh)
 ## Version Variables
 NEXT_VERSION    = $(shell ./incrementpatch.py $(VERSION))
 TAG            := $(VERSION)
-CHART_VER      := 0.1.6
+CHART_VER      := 0.1.7
 
 ## Docker Variables
 BUILD_IMAGE      := mamebuilder
@@ -126,6 +126,7 @@ install:
 	        --namespace games ;\
 	done
 	@$(KUBECTL) apply -f roms-pvc.yaml 
+	@$(KUBECTL) apply -f art-pvc.yaml 
 
 upgrade: TAG = $(NEXT_VERSION)
 upgrade:
@@ -141,6 +142,7 @@ argocd_create: TAG = $(VERSION)
 argocd_create:
 	@$(KUBECTL) create ns games || true 
 	@$(KUBECTL) apply -f roms-pvc.yaml 
+	@$(KUBECTL) apply -f art-pvc.yaml 
 	@for game in $(GAMES) ; do \
 	    $(ARGOCD) app get $$game > /dev/null 2>&1  ; \
 	    if [[ $$? != 0 ]] ; then \
