@@ -76,20 +76,20 @@ html = f"""
     <script type="text/javascript" src="browserfs.min.js"></script>
     <script type="text/javascript" src="loader.js"></script>
     <script type="text/javascript">
-      function game_scale(nr, loader, canvas) {{
+      function game_scale(loader, canvas) {{
          var wrapper       = document.querySelector("#wrapper");
          var marquee       = document.querySelector("#marquee");
          var bezel         = document.querySelector("#bezel");
          var emularity     = document.querySelector("#emularity");
-         var nativeAR      = nr.width / nr.height;
-         var rotated       = ( {r} == 90 || {r} == 270 );
+         var rotation      = {r};
+         var rotated       = ( rotation == 90 || rotation == 270 );
 
          // The Bezel art is 16:9 aspect-ration and has either a 4:3 (horizontal game) or 3:4 (vertical game)
          //  transparent hole in the middle.  The height of the game should be the same as the height of the hole
          //  (which is just the height of the art).
          //  The width of the hole depends on the aspect-ratio
          //  - for e.g. centiped in a 1920x1080 bezel art the height is just 1080 and the width is 3/4*1080
-         //    The actual resolution for centiped doesn't match the aspect-ratio of the hole so the game will be a
+         //    The actual resolution for centiped doesn't match the aspect-ratio of the gap so the game will be a
          //    little bit streched to fit the hole...
          var game_height   = bezel.height;
          var game_width    = Math.trunc(4.0/3.0 * game_height);
@@ -136,7 +136,7 @@ html = f"""
                                                                             "/roms/{name}.zip")));
 
       var emulator = new Emulator(canvas, null, loader);
-      window.addEventListener('onload', game_scale(nr, loader, canvas));
+      window.addEventListener('onload', game_scale(loader, canvas));
       window.addEventListener('resize', function() {{ location.reload(true); }});
     </script>
   </body>
