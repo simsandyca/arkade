@@ -29,24 +29,24 @@ html = f"""
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>{description}</title>
     <style>
-      html, body {
+      html, body {{
         padding: 0; margin: 0;
         width: 100vw; height: 100vh;
-      }
-      #wrapper {
+      }}
+      #wrapper {{
         position: absolute;
         width: fit-content;
         background-color: black;
         padding: 0; margin: 0;
         width:  100vw; height: 100vh;
-      }
-      #marquee {
+      }}
+      #marquee {{
         width: 100%;
         aspect-ratio: 32 / 9;
         opacity: 0.8;
         padding: 0; margin: 0;
-      }
-      #bezel {
+      }}
+      #bezel {{
         position: relative;
         pointer-events: none;
         z-index: 2;
@@ -54,12 +54,12 @@ html = f"""
         aspect-ratio: 16 / 9;
         opacity: 0.8;
         padding: 0; margin: 0;
-      }
-      #emularity {
+      }}
+      #emularity {{
         position: relative;
         z-index: 1;
         padding: 0; margin: 0;
-      }
+      }}
     </style>
 
   </head>
@@ -76,7 +76,7 @@ html = f"""
     <script type="text/javascript" src="browserfs.min.js"></script>
     <script type="text/javascript" src="loader.js"></script>
     <script type="text/javascript">
-      function game_scale(nr, loader, canvas) {
+      function game_scale(nr, loader, canvas) {{
          var wrapper       = document.querySelector("#wrapper");
          var marquee       = document.querySelector("#marquee");
          var bezel         = document.querySelector("#bezel");
@@ -92,10 +92,10 @@ html = f"""
          //    little bit streched to fit the hole...
          var game_height   = bezel.height;
          var game_width    = Math.trunc(4.0/3.0 * game_height);
-         if (nativeAR < 1.0) {
+         if (nativeAR < 1.0) {{
             game_height   = bezel.height;
             game_width    = Math.trunc(3.0/4.0 * game_height);
-         }
+         }}
 
          // Tell the loader to draw the game in a canvas that is the computed width x height
          // and disable any scaling since those width x height values are computed to fit
@@ -120,9 +120,9 @@ html = f"""
          wrapper.style.height            = marquee.height + bezel.height;
          wrapper.style.width             = marquee.width;
 
-         emulator.start({ waitAfterDownloading: false });
-      }
-      var nr = {width: {w}, height: {h}};
+         emulator.start({{ waitAfterDownloading: false }});
+      }}
+      var nr = {{width: {w}, height: {h} }};
       var canvas = document.querySelector("#canvas");
       var loader = new MAMELoader(MAMELoader.driver("{name}"),
                                   MAMELoader.nativeResolution(nr.width, nr.height),
@@ -136,7 +136,7 @@ html = f"""
 
       var emulator = new Emulator(canvas, null, loader);
       window.addEventListener('onload', game_scale(nr, loader, canvas));
-      window.addEventListener('resize', function() { location.reload(true); });
+      window.addEventListener('resize', function() {{ location.reload(true); }});
     </script>
   </body>
 </html>
