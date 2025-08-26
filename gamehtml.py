@@ -82,6 +82,7 @@ html = f"""
          var bezel         = document.querySelector("#bezel");
          var emularity     = document.querySelector("#emularity");
          var nativeAR      = nr.width / nr.height;
+         var rotated       = ( {r} == 90 || {r} == 270 );
 
          // The Bezel art is 16:9 aspect-ration and has either a 4:3 (horizontal game) or 3:4 (vertical game)
          //  transparent hole in the middle.  The height of the game should be the same as the height of the hole
@@ -92,7 +93,7 @@ html = f"""
          //    little bit streched to fit the hole...
          var game_height   = bezel.height;
          var game_width    = Math.trunc(4.0/3.0 * game_height);
-         if (nativeAR < 1.0) {{
+         if ( rotated ) {{
             game_height   = bezel.height;
             game_width    = Math.trunc(3.0/4.0 * game_height);
          }}

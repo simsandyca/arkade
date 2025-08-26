@@ -1,5 +1,5 @@
 build
-list.xml
 emularity
 output
 game-*.tgz
+mame_meta_data.xml
