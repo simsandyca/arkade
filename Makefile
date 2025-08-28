@@ -125,8 +125,8 @@ install:
 	        --create-namespace \
 	        --namespace games ;\
 	done
-	@$(KUBECTL) apply -f roms-pvc.yaml 
-	@$(KUBECTL) apply -f art-pvc.yaml 
+	@$(KUBECTL) apply -f roms-pvc.yaml || true 
+	@$(KUBECTL) apply -f art-pvc.yaml || true
 
 upgrade: TAG = $(NEXT_VERSION)
 upgrade:
@@ -141,8 +141,8 @@ upgrade:
 argocd_create: TAG = $(VERSION)
 argocd_create:
 	@$(KUBECTL) create ns games || true 
-	@$(KUBECTL) apply -f roms-pvc.yaml 
-	@$(KUBECTL) apply -f art-pvc.yaml 
+	@$(KUBECTL) apply -f roms-pvc.yaml || true
+	@$(KUBECTL) apply -f art-pvc.yaml || true
 	@for game in $(GAMES) ; do \
 	    $(ARGOCD) app get $$game > /dev/null 2>&1  ; \
 	    if [[ $$? != 0 ]] ; then \
