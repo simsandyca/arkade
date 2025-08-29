@@ -122,6 +122,10 @@ html = f"""
          wrapper.style.width             = marquee.width;
 
          emulator.start({{ waitAfterDownloading: false }});
+         window.scrollTo({{
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+         }});
       }}
       var nr = {{width: {w}, height: {h} }};
       var canvas = document.querySelector("#canvas");
