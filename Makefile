@@ -34,8 +34,8 @@ BUILD_DOCKERFILE := Dockerfile
 GAME_DOCKERFILE  := Dockerfile.game
 
 ## Make Variables
-GAMES         := 20pacgal circus dkong gng 
-GAMES         += joust milliped qix robby supertnk 
+GAMES         := 1943mii 20pacgal circus centiped defender dkong gng 
+GAMES         += invaders joust milliped pacman qix robby supertnk 
 GAMES         += topgunnr truxton victory
 BUILD         := build#
 EMU           := emu#
