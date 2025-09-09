@@ -25,7 +25,7 @@ GH      := $(shell which gh)
 ## Version Variables
 NEXT_VERSION    = $(shell ./incrementpatch.py $(VERSION))
 TAG            := $(VERSION)
-CHART_VER      := 0.1.7
+CHART_VER      := 0.1.8
 
 ## Docker Variables
 BUILD_IMAGE      := mamebuilder
